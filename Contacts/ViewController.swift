@@ -11,49 +11,49 @@ class ViewController: UIViewController {
     
     @IBOutlet var tableView: UITableView!
     
-//    private var contacts = [ContactProtocol]()
     var contacts: [ContactProtocol] = [] {
-    didSet {
-        contacts.sort{$0.title < $1.title}
+        didSet {
+            contacts.sort{$0.title < $1.title}
+            storage.save(contacts: contacts)
+        }
     }
-    }
+    var storage: ContactStorageProtocol!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         loadContacts()
+        storage = ContactStorage()
+        loadContacts()
     }
     
     private func loadContacts() {
-        contacts.append(Contact(title: "Саня техосмотр", phone: "+78882130123"))
-        contacts.append(Contact(title: "Вова кальян", phone: "+790124312"))
-        contacts.append(Contact(title: "Петя груз", phone: "+72342352"))
-        contacts.append(Contact(title: "Оля соня", phone: "+7232525899"))
+        contacts = storage.load()
     }
     
-   @IBAction func showNewContactAlert() {
-       let alertController = UIAlertController(title: "Создайте новый контакт", message: "Введите имя и телефон", preferredStyle: .alert)
-       alertController.addTextField { textField in
-           textField.placeholder = "Имя"
-       }
-       alertController.addTextField { textField in
-           textField.placeholder = "Номер телефона"
-       }
-       
-       let createButton = UIAlertAction(title: "Создать", style: .default) { _ in
-           guard let contactName = alertController.textFields?[0].text,
-                 let contactPhone = alertController.textFields?[1].text else {
-                     return
-                 }
-           let contact = Contact(title: contactName, phone: contactPhone)
-           self.contacts.append(contact)
-           self.tableView.reloadData()
-       }
-       
-       let cancelButton = UIAlertAction(title: "Отменить", style: .default, handler: nil)
-       
-       alertController.addAction(cancelButton)
-       alertController.addAction(createButton)
-       self.present(alertController, animated: true, completion: nil)
+    @IBAction func showNewContactAlert() {
+        let alertController = UIAlertController(title: "Создайте новый контакт", message: "Введите имя и телефон", preferredStyle: .alert)
+        alertController.addTextField { textField in
+            textField.placeholder = "Имя"
+        }
+        alertController.addTextField { textField in
+            textField.placeholder = "Номер телефона"
+        }
+        
+        let createButton = UIAlertAction(title: "Создать", style: .default) { _ in
+            guard let contactName = alertController.textFields?[0].text,
+                  let contactPhone = alertController.textFields?[1].text else {
+                      return
+                  }
+            let contact = Contact(title: contactName, phone: contactPhone)
+            self.contacts.append(contact)
+            self.tableView.reloadData()
+        }
+        
+        let cancelButton = UIAlertAction(title: "Отменить", style: .default, handler: nil)
+        
+        alertController.addAction(cancelButton)
+        alertController.addAction(createButton)
+        self.present(alertController, animated: true, completion: nil)
     }
 }
 
@@ -91,9 +91,9 @@ extension ViewController: UITableViewDelegate {
         let actionDelete = UIContextualAction(
             style: .destructive,
             title: "Удалить") { _,_,_ in
-            self.contacts.remove(at: indexPath.row)
-            tableView.reloadData()
-        }
+                self.contacts.remove(at: indexPath.row)
+                tableView.reloadData()
+            }
         let actions = UISwipeActionsConfiguration(
             actions: [actionDelete])
         return actions
